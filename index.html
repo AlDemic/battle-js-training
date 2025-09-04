@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RPG Arena</title>
+  <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="layout">
+        <header class="header">
+            <h1 class="header__title">⚔️ RPG Arena ⚔️</h1>
+        </header>
+        <main class="main">
+            <section class="characters">
+                <!--render by js-->
+            </section>
+            <section class="controls">
+                <button id="controls__atk">Attack</button>
+                <button id="controls__heal">Healing</button>
+                <button id="controls__nextMob">Other enemy</button>
+            </section>
+            <section class="logs">
+                <div class="logs__log">
+                <!--Battle Log text render place-->
+                </div>
+                <button class="logs__clear" id="logs__clear">Clear history</button>
+            </section>
+        </main>
+    </div>
+
+    <!--scripts-->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

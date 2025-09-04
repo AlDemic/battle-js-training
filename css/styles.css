@@ -1,0 +1,102 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #222;
+    color: #eee;
+}
+
+.layout {
+    width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    height: auto;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.characters {
+    display: flex;
+    justify-content: space-between;
+}
+
+.characters__player {
+    width: 45%;
+    height: auto;
+    padding: 10px;
+}
+
+.characters__nick {
+    justify-content: center;
+    text-align: center;
+}
+
+.characters__pic {
+   height: 250px;
+   width: 100%;
+   display: block;
+}
+
+.characters__pic img {
+   height: 250px;
+   width: 100%;
+   display: block;
+   object-fit: cover;
+}
+
+.characters__hp {
+    height: 20px;
+    border-radius: 5px;
+    background: #444;
+}
+
+.characters__hp-bar {
+    height: 20px;
+    border-radius: 5px;
+    background: green;
+    width: 100%;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.controls button {
+    padding: 10px;
+}
+
+.logs {
+    display: flex;
+    flex-direction: column;
+    width: 600px;
+}
+
+.logs__log {
+    margin-top: 20px;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #555;
+    background: #111;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.logs__clear {
+    width: 150px;
+    padding: 10px;
+    text-align: center;
+    align-self: flex-end;
+}
+
