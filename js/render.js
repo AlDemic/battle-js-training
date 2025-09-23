@@ -11,19 +11,22 @@ export function renderCharacters(playerRender, monsterRender) {
     characters.appendChild(renderCharacter(monsterRender, "monster"));
 }
 
-function renderCharacter(character, type) {
+export function renderCharacter(character, type) {
     //create div block for player
     const characterBlock = document.createElement('div');
 
     //add class name for player div block
     characterBlock.classList.add('characters__player');
 
+    //add dataset to adjust effect for block
+    characterBlock.dataset.type = type;
+
     //render Player
     characterBlock.innerHTML = (type === "player") 
     ? `
         <h2 class="characters__nick">${character.nick}</h2>
         <div class="characters__pic">
-            <img src="img/player.png" />
+            <img class="characters__pic-avatar" src="img/player.png" alt="Player avatar" />
         </div>
         <div class="characters__hp"><div class="characters__hp-bar"></div></div>
         <div class="characters__hp-text">HP: ${Math.max(character.hp, 0)}%</div>
@@ -35,7 +38,7 @@ function renderCharacter(character, type) {
     : `
         <h2 class="characters__nick">${character.nick}</h2>
         <div class="characters__pic">
-            <img src="img/monster.png" />
+            <img class="characters__pic-avatar" src="img/monster.png" alt="Monster avatar" />
         </div>
         <div class="characters__hp"><div class="characters__hp-bar"></div></div>
         <div class="characters__hp-text">HP: ${Math.max(character.hp, 0)}%</div>

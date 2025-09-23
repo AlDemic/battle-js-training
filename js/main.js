@@ -2,9 +2,11 @@ import { createPlayer } from './playerCreation.js';
 import { createMonster } from './monsterCreation.js';
 import { savedStorage } from './saveStorage.js';
 import { lvlUp } from './lvlUp.js';
-import { renderCharacters } from './render.js';
-import { renderBattleLog } from './render.js';
+import { renderCharacters, renderBattleLog } from './render.js';
 import { battleLogText } from './battleLog.js';
+import { healPlayer } from './healPlayer.js';
+import { applyDeathStatus, controlsDeathEffect } from './deathStatus.js';
+
 
 //take from localStorage Player and Monster OR create them
 let player = JSON.parse(localStorage.getItem("player")) || createPlayer("AlDemic"),
@@ -19,13 +21,18 @@ function renderHtml() {
     renderBattleLog(battleLog);
 }
 
-//first loading of page
+//first load or refresh
 renderHtml();
+
+if(player && player.hp <= 0) applyDeathStatus("player");
+if(monster && monster.hp <= 0) applyDeathStatus("monster");
+
 
 //game control block
 const battleControls = document.querySelector('.controls');
 
 battleControls.addEventListener('click', (e) => {
+    e.preventDefault();
     switch(e.target.id) {
         case "controls__nextMob":
             monster = createMonster();
@@ -35,22 +42,13 @@ battleControls.addEventListener('click', (e) => {
             battle(player, monster);
             break;
         case "controls__heal":
-            healPlayer();
+            healPlayer(player);
             renderHtml();
             break;
         default:
             return;
     }
 })
-
-//heal function
-function healPlayer() {
-    //heal parameter
-    const healPower = 20;
-
-    //heal logic
-    player.hp = Math.min(player.hp + healPower, 100); 
-} 
 
 //clear battle log
 const battleLogClear = document.querySelector('.logs');
@@ -74,31 +72,18 @@ battleLogClear.addEventListener('click', (e) => {
 
 //battle function
 function battle(playerInBattle, monsterInBattle) {
-    const playerExp = player.exp + monster.atk;
 
-    //player and monster atk
-    if(monsterInBattle.hp > 0 && playerInBattle.hp > 0) {
-        //formulas
-        const dmgPlayer = Math.max(1, player.atk - monster.def),
-              dmgMonster = Math.max(1, monster.atk - player.def);
+    //dmg formulas(negative dmg makes "1" dmg)
+     const dmgPlayer = Math.max(1, player.atk - monster.def),
+           dmgMonster = Math.max(1, monster.atk - player.def);
 
-        monsterInBattle.hp -= dmgPlayer;
-        playerInBattle.hp -= dmgMonster;
+    //deal damage
+    monsterInBattle.hp -= dmgPlayer;
+    playerInBattle.hp -= dmgMonster;
 
-        //write log
-        battleLog.push(battleLogText(playerInBattle, monsterInBattle, "battle"));
-        savedStorage("battleLog", battleLog);
-
-        //check lvl up and write global info for mob and player
-        player = lvlUp(playerInBattle);
-        savedStorage("player", player)
-        monster = monsterInBattle;
-        savedStorage("monster", monster);
-
-        //render again
-        renderHtml();
-    } else if(monsterInBattle.hp <= 0) { //if monster die
-        playerInBattle.exp += playerExp;
+    //if monster die
+    if(monsterInBattle.hp <= 0) { 
+        playerInBattle.exp += monsterInBattle.atk;
 
         //write monster's die log
         battleLog.push(battleLogText(playerInBattle, monsterInBattle, "monsterDie"));
@@ -108,12 +93,17 @@ function battle(playerInBattle, monsterInBattle) {
         player = lvlUp(playerInBattle);
         savedStorage("player", player);
 
-        //create a new monster
-        monster = createMonster();
+        //write global info for monster
+        monster = monsterInBattle;
+        savedStorage("monster", monster);
 
         //render again
         renderHtml();
-    } else { //if Player die
+
+        //apply death effect for monster
+        applyDeathStatus("monster");
+
+    } else if(playerInBattle.hp <= 0) { //if Player die
         //write player's die log
         battleLog.push(battleLogText(playerInBattle, monsterInBattle, "playerDie"));
         savedStorage("battleLog", battleLog);
@@ -122,11 +112,84 @@ function battle(playerInBattle, monsterInBattle) {
         monster = monsterInBattle;
         savedStorage("monster", monster);
 
-        //create a new player
-        player = createPlayer("Other");
+        player = playerInBattle;
+        savedStorage("player", player);
+
+        //render again
+        renderHtml();
+
+        //apply death effect for player
+        applyDeathStatus("player");
+
+    } else {
+        //write log
+        battleLog.push(battleLogText(playerInBattle, monsterInBattle, "battle"));
+        savedStorage("battleLog", battleLog);
+
+        //check lvl up and write global info for mob and player
+        player = lvlUp(playerInBattle);
+        savedStorage("player", player);
+        monster = monsterInBattle;
+        savedStorage("monster", monster);
 
         //render again
         renderHtml();
     }
-
 }
+
+//"continue" game function
+export function continueGame() {
+    //clear local Storage for monster
+    localStorage.removeItem("monster");
+
+    //create new globals
+    monster = createMonster();
+
+    //save globals in local storage
+    savedStorage("player", player);
+    savedStorage("monster", monster);
+    savedStorage("battleLog", battleLog);
+
+    //render all
+    renderHtml();
+
+    //switch on controls
+    controlsDeathEffect(false);
+
+    //remove "New Game" and "Continue" btn
+    clearControlBtns();
+}
+
+//start "new game" function
+export function startNewGame() {
+    //clear local Storage (info about player, monster, Battle Log)
+    localStorage.clear();
+
+    //create new globals
+    player = createPlayer("AlDemic");
+    monster = createMonster();
+    battleLog = [];
+
+    //save globals in local storage
+    savedStorage("player", player);
+    savedStorage("monster", monster);
+    savedStorage("battleLog", battleLog);
+
+    //render all
+    renderHtml();
+
+    //switch on controls
+    controlsDeathEffect(false);
+
+    //remove "New Game" and "Continue" btn
+    clearControlBtns();
+}
+
+//clear "Continue" and "New Game" btns function
+function clearControlBtns() {
+    document.querySelector('#newGameBtn')?.remove();
+    document.querySelector('#continueGameBtn')?.remove();
+}
+
+
+

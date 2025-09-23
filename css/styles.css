@@ -43,13 +43,30 @@ header {
    height: 250px;
    width: 100%;
    display: block;
+   position: relative;
 }
 
-.characters__pic img {
+.characters__pic-avatar {
    height: 250px;
    width: 100%;
    display: block;
    object-fit: cover;
+}
+
+.characters__pic-dead {
+    position: absolute;
+    z-index: 2;
+    width: 100%;
+    height: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    transition: all 0.7s ease;
+}
+
+.characters__pic-dead.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.5) rotate(-35deg);
 }
 
 .characters__hp {

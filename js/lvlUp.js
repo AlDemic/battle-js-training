@@ -3,7 +3,7 @@ import { renderCharacters } from './render.js';
 //lvl up stats
 const lvlUpAtk = 10,
       lvlUpDef = 5,
-      lvlUpExpNeed = 30; //how much need exp for lvl up
+      lvlUpExpNeed = 20; //how much need exp for lvl up
 
 //lvl up function
 export function lvlUp(playerLvlUp) {
