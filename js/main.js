@@ -6,6 +6,8 @@ import { renderCharacters, renderBattleLog } from './render.js';
 import { battleLogText } from './battleLog.js';
 import { healPlayer } from './healPlayer.js';
 import { applyDeathStatus, controlsDeathEffect } from './deathStatus.js';
+import { hitEffects, healingEffect, lvlUpEffect } from './battleEffect.js';
+import { dmgRange } from './dmgRange.js';
 
 
 //take from localStorage Player and Monster OR create them
@@ -24,9 +26,13 @@ function renderHtml() {
 //first load or refresh
 renderHtml();
 
-if(player && player.hp <= 0) applyDeathStatus("player");
-if(monster && monster.hp <= 0) applyDeathStatus("monster");
-
+if(player.hp <= 0 && monster.hp <= 0) {
+    applyDeathStatus("both");
+} else if(player && player.hp <= 0) {
+     applyDeathStatus("player");
+} else if(monster.hp <= 0) {
+    applyDeathStatus("monster");
+}
 
 //game control block
 const battleControls = document.querySelector('.controls');
@@ -42,8 +48,9 @@ battleControls.addEventListener('click', (e) => {
             battle(player, monster);
             break;
         case "controls__heal":
-            healPlayer(player);
+            healPlayer(player, monster, battleLog);
             renderHtml();
+            healingEffect();
             break;
         default:
             return;
@@ -72,25 +79,49 @@ battleLogClear.addEventListener('click', (e) => {
 
 //battle function
 function battle(playerInBattle, monsterInBattle) {
-
     //dmg formulas(negative dmg makes "1" dmg)
-     const dmgPlayer = Math.max(1, player.atk - monster.def),
-           dmgMonster = Math.max(1, monster.atk - player.def);
+    const dmgPlayer = Math.max(1, dmgRange(playerInBattle.atk) - monsterInBattle.def),
+          dmgMonster = Math.max(1, dmgRange(monsterInBattle.atk) - playerInBattle.def);
 
     //deal damage
     monsterInBattle.hp -= dmgPlayer;
     playerInBattle.hp -= dmgMonster;
 
-    //if monster die
-    if(monsterInBattle.hp <= 0) { 
+    if(playerInBattle.hp <= 0 && monsterInBattle.hp <= 0) { //if Player and Monster die
+        //write player's die log
+        battleLog.push(battleLogText(playerInBattle, monsterInBattle, "bothDie", dmgPlayer, dmgMonster));
+        savedStorage("battleLog", battleLog);
+
+        //write rest info of mob in log
+        monster = monsterInBattle;
+        savedStorage("monster", monster);
+
+        //write rest info of player in log
+        player = playerInBattle;
+        savedStorage("player", player);
+
+        //render again
+        renderHtml();
+
+        //atk effect
+        hitEffects("player", dmgMonster);
+        hitEffects("monster", dmgPlayer);
+
+        //apply death effect for player and monster
+        setTimeout(() => {
+            applyDeathStatus("both");
+        }, 350);
+
+    } else if(monsterInBattle.hp <= 0) {  // if monster die
         playerInBattle.exp += monsterInBattle.atk;
 
         //write monster's die log
-        battleLog.push(battleLogText(playerInBattle, monsterInBattle, "monsterDie"));
+        battleLog.push(battleLogText(playerInBattle, monsterInBattle, "monsterDie", dmgPlayer, dmgMonster));
         savedStorage("battleLog", battleLog);
 
         //check lvl up and write global info of player
-        player = lvlUp(playerInBattle);
+        const { playerLvlUp, isLeveledUp } = lvlUp(playerInBattle, monsterInBattle, battleLog);
+        player = playerLvlUp;
         savedStorage("player", player);
 
         //write global info for monster
@@ -100,12 +131,20 @@ function battle(playerInBattle, monsterInBattle) {
         //render again
         renderHtml();
 
+        //atk effect
+        hitEffects("monster", dmgPlayer);
+
         //apply death effect for monster
-        applyDeathStatus("monster");
+        setTimeout(() => {
+            applyDeathStatus("monster");
+        }, 350);
+
+        //lvl up effect
+        if(isLeveledUp) lvlUpEffect();
 
     } else if(playerInBattle.hp <= 0) { //if Player die
         //write player's die log
-        battleLog.push(battleLogText(playerInBattle, monsterInBattle, "playerDie"));
+        battleLog.push(battleLogText(playerInBattle, monsterInBattle, "playerDie", dmgPlayer, dmgMonster));
         savedStorage("battleLog", battleLog);
 
         //write rest info of mob in log
@@ -118,22 +157,38 @@ function battle(playerInBattle, monsterInBattle) {
         //render again
         renderHtml();
 
-        //apply death effect for player
-        applyDeathStatus("player");
+        //atk effect
+        hitEffects("player", dmgMonster);
 
+        //apply death effect for player
+        setTimeout(() => {
+            applyDeathStatus("player");
+        }, 350);
+        
     } else {
         //write log
-        battleLog.push(battleLogText(playerInBattle, monsterInBattle, "battle"));
+        battleLog.push(battleLogText(playerInBattle, monsterInBattle, "battle", dmgPlayer, dmgMonster));
         savedStorage("battleLog", battleLog);
 
-        //check lvl up and write global info for mob and player
-        player = lvlUp(playerInBattle);
+        //check lvl up and write global info of player
+        const { playerLvlUp, isLeveledUp } = lvlUp(playerInBattle, monsterInBattle, battleLog);
+        player = playerLvlUp;
         savedStorage("player", player);
+
         monster = monsterInBattle;
         savedStorage("monster", monster);
 
         //render again
         renderHtml();
+
+        //attack effect
+        hitEffects("monster", dmgPlayer);
+        setTimeout(() => {
+            hitEffects("player", dmgMonster);
+        }, 250); 
+
+        //lvl up effect
+        if(isLeveledUp) lvlUpEffect();
     }
 }
 

@@ -1,17 +1,36 @@
 import { savedStorage } from './saveStorage.js';
 
-const monsterNames = ["Goblin", "Orc", "Troll", "Imp", "Skeleton", "Zombie", "Ogre", "Slime"];
+const monstersArray = [
+  {
+    name: "Goblin",
+    img: "img/monsters/goblin.png"
+  },
+  {
+    name: "Orc",
+    img: "img/monsters/orc.png"
+  },
+  {
+    name: "Zombie",
+    img: "img/monsters/zombie.png"
+  }
+]
 
 //local parameters
 const hpBase = 100;
       
 //create monster
 export function createMonster() {
+    //get index of random monster
+    const index = getRandom(0, monstersArray.length - 1);
+
+    const { name, img } = monstersArray[index];
+
     const newMonster = {
-        nick: monsterNames[getRandom(0, monsterNames.length - 1)], //random name from list
+        nick: name, 
+        img: img, 
         hp: hpBase,
-        atk: getRandom(2, 30),
-        def: getRandom(2, 15)
+        atk: getRandom(2, 20),
+        def: getRandom(2, 7)
     };
 
     //add new monster to localStorage

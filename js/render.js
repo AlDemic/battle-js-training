@@ -38,7 +38,7 @@ export function renderCharacter(character, type) {
     : `
         <h2 class="characters__nick">${character.nick}</h2>
         <div class="characters__pic">
-            <img class="characters__pic-avatar" src="img/monster.png" alt="Monster avatar" />
+            <img class="characters__pic-avatar" src="${character.img}" alt="Monster avatar" />
         </div>
         <div class="characters__hp"><div class="characters__hp-bar"></div></div>
         <div class="characters__hp-text">HP: ${Math.max(character.hp, 0)}%</div>
@@ -63,7 +63,29 @@ export function renderBattleLog(logBattle) {
      : logBattle
         .slice()
         .reverse()
-        .map(log => `<p>${log}</p>`)
+        .map(log => {
+            let color;
+            switch(log.type) {
+                case "lvlUp":
+                    color = "green";
+                    break;
+                case "playerDie":
+                    color = "red";
+                    break;
+                case "monsterDie":
+                    color = "orange";
+                    break;
+                case "bothDie":
+                    color = "red";
+                    break;
+                case "heal":
+                    color = "green";
+                    break;
+                default:
+                    color = "grey";
+            }
+            return `<p style="color:${color}">${log.text}</p>`;
+        })
         .join("");
 }
 

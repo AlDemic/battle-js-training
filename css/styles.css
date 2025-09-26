@@ -117,3 +117,82 @@ header {
     align-self: flex-end;
 }
 
+/*atk effects*/
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+.shake {
+    animation: shake 0.3s ease-in-out;
+}
+
+/*slash effect pic*/
+.characters__pic-slashHit {
+    position: absolute;
+    z-index: 2;
+    width: 150px;
+    height: auto;
+    top: 30%;
+    left: 20%;
+    opacity: 0;
+    transform: rotate(0deg);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.characters__pic-slashHit.show {
+    opacity: 1;
+    transform: rotate(45deg);
+}
+
+/*healing effect pic*/
+.characters__pic-heal {
+    position: absolute;
+    z-index: 2;
+    width: 150px;
+    height: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 1.2s ease;
+}
+
+.characters__pic-heal.show {
+    transform: translate(-50%, -50%) scale(0.5);
+}
+
+/*level up effect*/
+.characters__pic-lvlUp {
+    position: absolute;
+    z-index: 2;
+    width: 150px;
+    height: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 1.5s ease;
+}
+
+.characters__pic-lvlUp.show {
+    transform: translate(-50%, -50%) scale(0.7);
+}
+
+/*Damage numbers effect*/
+.characters__pic-dmgNumber {
+    position: absolute;
+    z-index: 2;
+    top: 20%;
+    left: 50%;
+    color: #ff4c4c;
+    font-size: 24px;
+    transform: translate(-50%, 20%);
+    transition: all 1.5s ease;
+}
+
+.characters__pic-dmgNumber.show {
+    top: 10%;
+    transform: translate(-50%, 10%) scale(0.7);
+}

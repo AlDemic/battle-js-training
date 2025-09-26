@@ -2,7 +2,12 @@ import { startNewGame, continueGame } from './main.js';
 
 //death function
 export function applyDeathStatus(type) {
-    characterDeathEffect(type); //apply death status for character
+    if(type === "both") {
+        characterDeathEffect("player");
+        characterDeathEffect("monster");
+    } else {
+        characterDeathEffect(type); //apply death status for character
+    }
     
     controlsDeathEffect(true); //switch off controls buttons
 
@@ -35,7 +40,7 @@ function characterDeathEffect(type) {
     //add visual effect of appear for dead status picture
     setTimeout(() => {
         deadPic.classList.add('show');
-    }, 50);
+    }, 250);
 }
 
 //activate/deactivate btns for control and log clear
