@@ -99,3 +99,89 @@ export function lvlUpEffect() {
     }, 50);
     setTimeout(() => lvlUpPic.remove(), 400); //remove pic
 }
+
+//player's buff effect
+export function plrBuffEffect(isDay, precip) {
+    //safety
+    if(isDay == null || precip == null) return;
+
+    //grayscale pic adjustment (if good weather and day time -> 100%, otherwise => adjust pic grayscale)
+    let grayScaleParam = 0; //global adjustment var
+
+    if(isDay === 1 && precip === 0) {
+        grayScaleParam = 0; //no gray adj
+    } else {
+        //percent debuff var as %
+        const weatherDebuff = 20;
+        const nightDebuff = 10;
+
+        //debuff percent calculation
+        const debuffPercent = (isDay === 1 ? 0 : nightDebuff) + (precip === 1 ? weatherDebuff : 0);
+
+        //adjust grayscale
+        grayScaleParam = debuffPercent;
+    }
+
+    //**Create visual**//
+
+    //get DOM elements
+    const typeBlock = document.querySelector('.characters__player[data-type="player"]');
+    const picBlock = typeBlock.querySelector('.characters__pic');
+
+    //create buff effect(sword icon)
+    //if isDay = 1 and precip = 0 => Boost x2. If isDay = 0 => dmg -10%; If precip = 1 => dmg -20%
+    const buffPic = document.createElement('img');
+    buffPic.classList.add('characters__pic-buffEffect');
+    buffPic.id = 'characters__pic-buffEffect';
+    buffPic.src = 'img/sword-icon.png';
+    buffPic.alt = 'Buff effect';
+    buffPic.style.filter = `grayscale(${grayScaleParam}%)`;
+    //add to DOM
+    picBlock.appendChild(buffPic);
+    //tooltip effect
+    tippy('#characters__pic-buffEffect', {
+        content: (isDay === 1 && precip === 0) 
+        ? "☀️ Good weather! Damage x2"
+        : `⚔️ Damage reduced at ${grayScaleParam}% due-to ${
+            (isDay === 0 ? "night.." : "") +
+            (precip === 1 ? "bad weather.." : "")
+        }`
+    });
+
+}
+
+//monster's buff effect
+export function mobBuffEffect(isDay, monster) {
+    //safety
+    if(isDay == null || monster == null) return;
+
+
+    //if night time and monster "Vampire" => dmg x2
+    if(monster.nick === "Vampire" && isDay === 0) {
+    let grayScaleParam = 0; //global adjustment var
+
+    //**Create visual**//
+
+    //get DOM elements
+    const typeBlock = document.querySelector('.characters__player[data-type="monster"]');
+    const picBlock = typeBlock.querySelector('.characters__pic');
+
+    //create buff effect(sword icon)
+    const buffPic = document.createElement('img');
+    buffPic.classList.add('characters__pic-buffEffect');
+    buffPic.id = 'characters__pic-buffEffect';
+    buffPic.src = 'img/sword-icon.png';
+    buffPic.alt = 'Buff effect';
+    buffPic.style.filter = `grayscale(${grayScaleParam}%)`;
+    //add to DOM
+    picBlock.appendChild(buffPic);
+    //tooltip effect
+    tippy('.characters__player[data-type="monster"] #characters__pic-buffEffect', {
+        content: () => {
+            if(monster.nick === "Vampire" && isDay === 0) return "⚔️ Run! Monster damage x2!";
+        }
+    });
+    } else {
+        return;
+    }
+}

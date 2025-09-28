@@ -196,3 +196,43 @@ header {
     top: 10%;
     transform: translate(-50%, 10%) scale(0.7);
 }
+
+/*statistic block*/
+.statistic {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid grey;
+    border-radius: 5px;
+    width: 600px;
+    padding: 10px;
+}
+
+.statistic__title {
+    color: green;
+    font-weight: bold;
+}
+
+.statistic__counter {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    text-align: center;
+}
+
+.statistic__info-mobKills {
+    color: red;
+}
+
+/*buff effect*/
+.characters__pic-buffEffect {
+    position: absolute;
+    z-index: 2;
+    width: 20px;
+    height: auto;
+    top: 3%;
+    left: 5%;
+}

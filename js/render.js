@@ -57,6 +57,9 @@ export function renderBattleLog(logBattle) {
    //get DOM element for log
     const logBlock = document.querySelector('.logs__log');
 
+    //clean content
+    logBlock.innerHTML = '';
+
     //render log battle text or "No logs" if massive is empty
     logBlock.innerHTML = (logBattle.length === 0)
      ? "<p>No logs</p>" 
@@ -87,5 +90,35 @@ export function renderBattleLog(logBattle) {
             return `<p style="color:${color}">${log.text}</p>`;
         })
         .join("");
+}
+
+//HTML generation of statistic
+export function renderStatistic(battleStatistic) {
+    //get DOM elements for statistic block
+    const statBlock = document.querySelector('.statistic__counter');
+
+    //clean at first
+    statBlock.innerHTML = '';
+
+    if(battleStatistic.length > 0) {
+        battleStatistic.forEach(statInfo => {
+            //create DOM element
+            const statElement = document.createElement('div');
+            statElement.classList.add('statistic__info');
+
+            //generate html content
+            statElement.innerHTML = `
+                <p class='statistic__info-mobName'>${statInfo.name}: 
+                <span class='statistic__info-mobKills'>${statInfo.counter}</span></p>
+            `;
+
+            //render html
+            statBlock.appendChild(statElement);
+        });
+    } else {
+        //if statistic empty
+        statBlock.innerHTML = "<p class='statistic__info-mobName'>Statistic is empty. Start fighting ^_^</p>";
+        return;
+    }
 }
 

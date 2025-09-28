@@ -2,13 +2,17 @@ import { createPlayer } from './playerCreation.js';
 import { createMonster } from './monsterCreation.js';
 import { savedStorage } from './saveStorage.js';
 import { lvlUp } from './lvlUp.js';
-import { renderCharacters, renderBattleLog } from './render.js';
+import { renderCharacters, renderBattleLog, renderStatistic } from './render.js';
 import { battleLogText } from './battleLog.js';
 import { healPlayer } from './healPlayer.js';
 import { applyDeathStatus, controlsDeathEffect } from './deathStatus.js';
-import { hitEffects, healingEffect, lvlUpEffect } from './battleEffect.js';
+import { hitEffects, healingEffect, lvlUpEffect, plrBuffEffect, mobBuffEffect } from './battleEffect.js';
 import { dmgRange } from './dmgRange.js';
+import { addStatistic } from './battleStatistic.js';
+import { initWeatherInfo } from './api.js';
 
+//init weather info
+const { isDay, precip } = await initWeatherInfo();
 
 //take from localStorage Player and Monster OR create them
 let player = JSON.parse(localStorage.getItem("player")) || createPlayer("AlDemic"),
@@ -17,10 +21,16 @@ let player = JSON.parse(localStorage.getItem("player")) || createPlayer("AlDemic
 //battle log
 let battleLog = JSON.parse(localStorage.getItem("battleLog")) || [];
 
+//battle statistic log
+let battleStatistic = JSON.parse(localStorage.getItem("battleStatistic")) || [];
+
 //render function HTML
 function renderHtml() {
     renderCharacters(player, monster);
     renderBattleLog(battleLog);
+    renderStatistic(battleStatistic);
+    plrBuffEffect(isDay, precip);
+    mobBuffEffect(isDay, monster);
 }
 
 //first load or refresh
@@ -79,26 +89,52 @@ battleLogClear.addEventListener('click', (e) => {
 
 //battle function
 function battle(playerInBattle, monsterInBattle) {
-    //dmg formulas(negative dmg makes "1" dmg)
-    const dmgPlayer = Math.max(1, dmgRange(playerInBattle.atk) - monsterInBattle.def),
-          dmgMonster = Math.max(1, dmgRange(monsterInBattle.atk) - playerInBattle.def);
+    //safety. Prevent double clicking
+    if(playerInBattle.hp <= 0 || monsterInBattle.hp <= 0) return;
 
-    //deal damage
+    //dmg formulas(negative dmg makes "1" dmg)
+
+    //****Player dmg****
+    //if isDay = 0 -> dmgPlayer less 10%, if isDay = 0 && precip = 1 => dmgPlayer less 30%
+    const basePlrDmg = Math.max(1, dmgRange(playerInBattle.atk) - monsterInBattle.def);
+
+    //Base for debuff and boost
+    let dmgMultiplier = 1;
+
+    if(isDay === 1 && precip === 0) {
+        dmgMultiplier = 2; //if good weather and day time => player dmg * 2
+    } else {
+        //if night or bad weather => make debuff
+        const debuffPercent = (isDay === 0 ? 0.1 : 0) + (precip === 1 ? 0.2 : 0);
+        dmgMultiplier = 1 - debuffPercent;
+    }
+
+    //Final player dmg
+    const dmgPlayer = Math.max(1, Math.round(basePlrDmg * dmgMultiplier));
+
+    //**** Monster damage****
+    //if vampire and isDay = 0 => dmgMonster * 2;
+    let mobPowerBoost = (monsterInBattle.nick === "Vampire" && isDay === 0) ? 2 : 1;
+    const dmgMonster = Math.max(1, dmgRange(monsterInBattle.atk) - playerInBattle.def) * mobPowerBoost;
+
+    //**deal damage**
     monsterInBattle.hp -= dmgPlayer;
     playerInBattle.hp -= dmgMonster;
 
     if(playerInBattle.hp <= 0 && monsterInBattle.hp <= 0) { //if Player and Monster die
         //write player's die log
         battleLog.push(battleLogText(playerInBattle, monsterInBattle, "bothDie", dmgPlayer, dmgMonster));
-        savedStorage("battleLog", battleLog);
 
         //write rest info of mob in log
         monster = monsterInBattle;
-        savedStorage("monster", monster);
-
+        
         //write rest info of player in log
         player = playerInBattle;
+        
+        //rewrite storage
+        savedStorage("battleLog", battleLog);
         savedStorage("player", player);
+        savedStorage("monster", monster);
 
         //render again
         renderHtml();
@@ -117,16 +153,25 @@ function battle(playerInBattle, monsterInBattle) {
 
         //write monster's die log
         battleLog.push(battleLogText(playerInBattle, monsterInBattle, "monsterDie", dmgPlayer, dmgMonster));
-        savedStorage("battleLog", battleLog);
 
         //check lvl up and write global info of player
-        const { playerLvlUp, isLeveledUp } = lvlUp(playerInBattle, monsterInBattle, battleLog);
+        const { playerLvlUp, isLeveledUp } = lvlUp(playerInBattle);
         player = playerLvlUp;
-        savedStorage("player", player);
+
+        //write log
+        battleLog.push(battleLogText(playerLvlUp, monsterInBattle, "lvlUp"));
 
         //write global info for monster
         monster = monsterInBattle;
+        
+        //add killed mob to statistic and rewrite global
+        battleStatistic = addStatistic(monsterInBattle, battleStatistic);
+
+        //rewrite storage
+        savedStorage("battleLog", battleLog);
+        savedStorage("player", player);
         savedStorage("monster", monster);
+        savedStorage("battleStatistic", battleStatistic);
 
         //render again
         renderHtml();
@@ -145,13 +190,15 @@ function battle(playerInBattle, monsterInBattle) {
     } else if(playerInBattle.hp <= 0) { //if Player die
         //write player's die log
         battleLog.push(battleLogText(playerInBattle, monsterInBattle, "playerDie", dmgPlayer, dmgMonster));
-        savedStorage("battleLog", battleLog);
-
+        
         //write rest info of mob in log
         monster = monsterInBattle;
-        savedStorage("monster", monster);
-
+        
         player = playerInBattle;
+        
+        //rewrite storage
+        savedStorage("battleLog", battleLog);
+        savedStorage("monster", monster);
         savedStorage("player", player);
 
         //render again
@@ -168,14 +215,17 @@ function battle(playerInBattle, monsterInBattle) {
     } else {
         //write log
         battleLog.push(battleLogText(playerInBattle, monsterInBattle, "battle", dmgPlayer, dmgMonster));
-        savedStorage("battleLog", battleLog);
-
+        
         //check lvl up and write global info of player
-        const { playerLvlUp, isLeveledUp } = lvlUp(playerInBattle, monsterInBattle, battleLog);
+        const { playerLvlUp, isLeveledUp } = lvlUp(playerInBattle);
         player = playerLvlUp;
-        savedStorage("player", player);
-
+        
+        //rewrite global info for monster
         monster = monsterInBattle;
+       
+        //rewrite storage
+        savedStorage("battleLog", battleLog);
+        savedStorage("player", player);
         savedStorage("monster", monster);
 
         //render again
@@ -204,6 +254,7 @@ export function continueGame() {
     savedStorage("player", player);
     savedStorage("monster", monster);
     savedStorage("battleLog", battleLog);
+    savedStorage("battleStatistic", battleStatistic);
 
     //render all
     renderHtml();
@@ -224,11 +275,13 @@ export function startNewGame() {
     player = createPlayer("AlDemic");
     monster = createMonster();
     battleLog = [];
+    battleStatistic = [];
 
     //save globals in local storage
     savedStorage("player", player);
     savedStorage("monster", monster);
     savedStorage("battleLog", battleLog);
+    savedStorage("battleStatistic", battleStatistic);
 
     //render all
     renderHtml();

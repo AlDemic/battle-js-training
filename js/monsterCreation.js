@@ -10,6 +10,10 @@ const monstersArray = [
     img: "img/monsters/orc.png"
   },
   {
+    name: "Vampire",
+    img: "img/monsters/vamp.png"
+  },
+  {
     name: "Zombie",
     img: "img/monsters/zombie.png"
   }
