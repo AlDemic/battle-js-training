@@ -5,13 +5,13 @@ Turn-based battle game with random enemies, level-ups, and dynamic combat influe
 
 ## 🎮 Gameplay
 
-* Fight random enemies; earn experience and level up.
+Fight random enemies; earn experience and level up.
 
-* Player and certain enemies (like Vampires) deal damage based on time of day and weather conditions.
+Player and certain enemies (like Vampires) deal damage based on time of day and weather conditions.
 
-* Battle log tracks damage, healing, level-ups, and deaths.
+Battle log tracks damage, healing, level-ups, and deaths.
 
-* Visual effects include:
+Visual effects include:
 
 - attack animations;
 
@@ -50,12 +50,9 @@ Turn-based battle game with random enemies, level-ups, and dynamic combat influe
 
 1. Use a local server (for ES modules and API fetch requests):
 
-- with VS Code, install Live Server
- extension → right-click index.html → Open with Live Server.
+- with VS Code, install Live Server: extension → right-click index.html → Open with Live Server.
 
-- or using Node.js:
-
-npx serve
+- or using Node.js: npx serve
 
 2. Open your browser at the provided URL.
 
